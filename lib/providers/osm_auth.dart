@@ -126,6 +126,9 @@ class OsmAuthController extends StateNotifier<String?> {
       if (match != null) {
         result = int.parse(match.group(1)!) >= 11;
       }
+    } else if (Platform.isLinux) {
+      // flutter_web_auth_2 doesn't support linux, as of v2.0.0
+      result = false;
     }
     _supportsOAuth = result;
     return result;

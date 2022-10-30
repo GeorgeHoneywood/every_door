@@ -12,6 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_dropdown_alert/dropdown_alert.dart';
 import 'package:logging/logging.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
 
 void main() {
   Logger.root.level = kDebugMode ? Level.INFO : Level.WARNING;
@@ -25,6 +27,11 @@ void main() {
       FlutterError.presentError(details);
       logStore.addFromFlutter(details);
     };
+    if (Platform.isLinux) {
+      // use FFI if on linux, as sqflite does not have native support
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
     runApp(ProviderScope(child: const EveryDoorApp()));
   }, (error, stack) {
     logStore.addFromZone(error, stack);

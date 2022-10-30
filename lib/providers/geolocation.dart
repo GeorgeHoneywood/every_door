@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:every_door/constants.dart';
@@ -33,14 +34,21 @@ class GeolocationController extends StateNotifier<LatLng?> {
 
   GeolocationController(this._ref) : super(null) {
     _stateTime = DateTime.now();
-    _statSub = Geolocator.getServiceStatusStream().listen((status) {
-      if (status == ServiceStatus.enabled) {
-        enableTracking();
-      } else {
-        disableTracking();
-        state = null;
-      }
-    });
+
+    try {
+      _statSub = Geolocator.getServiceStatusStream().listen((status) {
+        if (status == ServiceStatus.enabled) {
+          enableTracking();
+        } else {
+          disableTracking();
+          state = null;
+        }
+      });
+    } on UnimplementedError catch (e) {
+      // Geolocator.getServiceStatusStream() throws UnimplementedError on non-gnome linux as of geolocator_linux 0.1.2
+      disableTracking();
+      state = null;
+    }
   }
 
   LocationSettings _makeLocationSettings() {
@@ -141,6 +149,10 @@ class GeolocationController extends StateNotifier<LatLng?> {
           message: loc?.enableGPSMessage ?? 'Please enable location services.',
           context: context,
         );
+        if (Platform.isLinux) {
+          // Geolocator.openLocationSettings() throws UnimplementedError on non-gnome linux as of geolocator_linux 0.1.2
+          return;
+        }
         await Geolocator.openLocationSettings();
       } else
         return;

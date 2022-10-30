@@ -73,6 +73,7 @@ flutter:
     - assets/presets.db
     - assets/lets-encrypt-r3.pem
     - assets/roofs/
+    - icon/app_icon.png
 
 flutter_icons:
   android: "ic_launcher"
